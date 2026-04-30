@@ -1,0 +1,27 @@
+[
+  {
+    "ticker": "MA",
+    "qty": 10,
+    "avgPrice": 450.5
+  },
+  {
+    "ticker": "NVDA",
+    "qty": 15,
+    "avgPrice": 850
+  },
+  {
+    "ticker": "TSLA",
+    "qty": 5,
+    "avgPrice": 250
+  },
+  {
+    "ticker": "AAPL",
+    "qty": 15,
+    "avgPrice": 300
+  },
+  {
+    "ticker": "GOOGL",
+    "qty": 10,
+    "avgPrice": 400
+  }
+]

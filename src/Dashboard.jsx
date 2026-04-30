@@ -10,13 +10,11 @@ import StockDetail from './components/StockDetail';
     const [mockStockData, setMockStockData] = useState({ stocks: [] });
     const [mockChartData, setMockChartData] = useState([]);
   
-    useEffect(() => {
-      axios.get('http://127.0.0.1:5000/portfolio')
-        .then((response) => setMockStockData({ stocks: response.data.portfolio }))
-        .catch((error) => console.error('Error fetching stock data:', error));
-    }, []);
-  
-    useEffect(() => {
+  useEffect(() => {
+    axios.get('http://127.0.0.1:5001/portfolio')
+      .then((response) => setMockStockData({ stocks: response.data.portfolio }))
+      .catch((error) => console.error('Error fetching stock data:', error));
+  }, []);    useEffect(() => {
       if (selectedStock?.ticker) {
         axios.get(`http://127.0.0.1:5000/data?ticker=${selectedStock.ticker}`, {
           headers: { 'Accept': 'text/csv' }

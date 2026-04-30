@@ -4,6 +4,7 @@ import LandingPage from './LandingPage';
 import Dashboard from './Dashboard';
 import HowItWorks from './HowItWorks';
 import Login from './LoginPage';
+import PortfolioManager from './PortfolioManager';
 import { AuthContext } from './components/AuthContext';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/portfolio-manager" element={<PortfolioManager />} />
         </Routes>
       </Router>
     </AuthContext.Provider>

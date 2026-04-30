@@ -39,7 +39,7 @@ const StockDetail = ({ stock, chartData, onClose }) => {
     try {
   await new Promise(resolve => setTimeout(resolve, 1000));
   addMessage("Decision Agent", `Requesting trend analysis for ${stock.ticker}`);
-      const trendRes = await fetch(`http://127.0.0.1:5000/trend?ticker=${stock.ticker}`);
+      const trendRes = await fetch(`http://127.0.0.1:5001/trend?ticker=${stock.ticker}`);
       const trendData = await trendRes.json();
       setAgentStatus(prev => ({
         ...prev,
@@ -53,7 +53,7 @@ const StockDetail = ({ stock, chartData, onClose }) => {
       await new Promise(resolve => setTimeout(resolve, 3000));
   
       addMessage("Decision Agent", `Requesting risk assessment for ${stock.ticker}`);
-      const riskRes = await fetch(`http://127.0.0.1:5000/risk?ticker=${stock.ticker}`);
+      const riskRes = await fetch(`http://127.0.0.1:5001/risk?ticker=${stock.ticker}`);
       const riskData = await riskRes.json();
       setAgentStatus(prev => ({
         ...prev,
@@ -67,7 +67,7 @@ const StockDetail = ({ stock, chartData, onClose }) => {
       await new Promise(resolve => setTimeout(resolve, 3000));
   
       addMessage("Decision Agent", `Requesting price forecast for ${stock.ticker}`);
-      const forecastRes = await fetch(`http://127.0.0.1:5000/forecast?ticker=${stock.ticker}`);
+      const forecastRes = await fetch(`http://127.0.0.1:5001/forecast?ticker=${stock.ticker}`);
       const forecastData = await forecastRes.json();
       setAgentStatus(prev => ({
         ...prev,
@@ -80,10 +80,10 @@ const StockDetail = ({ stock, chartData, onClose }) => {
       addMessage("Forecasting Agent", "Forecast models completed, sending predictions");
       await new Promise(resolve => setTimeout(resolve, 3000));
   
-      const decisionRes = await fetch(`http://127.0.0.1:5000/decision?ticker=${stock.ticker}`);
+      const decisionRes = await fetch(`http://127.0.0.1:5001/decision?ticker=${stock.ticker}`);
       const decisionData = await decisionRes.json();
   
-      const dataForecastRes = await fetch(`http://127.0.0.1:5000/data_forcast?ticker=${stock.ticker}`);
+      const dataForecastRes = await fetch(`http://127.0.0.1:5001/data_forcast?ticker=${stock.ticker}`);
       const csvText = await dataForecastRes.text();
       const lines = csvText.trim().split('\n');
       const headers = lines[0].split(',');

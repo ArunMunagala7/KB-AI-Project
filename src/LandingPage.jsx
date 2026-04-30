@@ -54,6 +54,11 @@ export default function LandingPage() {
                 Get Started
               </button>
             </Link>
+            <Link to="/portfolio-manager">
+              <button className="bg-green-600 hover:bg-green-700 px-6 py-3 text-lg rounded-full">
+                Manage Portfolio
+              </button>
+            </Link>
             <Link to="/how-it-works" className="text-yellow-400 text-lg">How it works?</Link>
           </div>
         </motion.div>

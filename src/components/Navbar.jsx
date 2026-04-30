@@ -22,6 +22,9 @@ export default function Navbar() {
           <div className="hidden md:flex space-x-6 items-center">
             <Link to="/" className="text-yellow-400 font-semibold">Home</Link>
             <Link to="/how-it-works" className="text-gray-400 hover:text-yellow-400">How it Works</Link>
+            {isAuthenticated && (
+              <Link to="/portfolio-manager" className="text-gray-400 hover:text-yellow-400">Manage Portfolio</Link>
+            )}
             {isAuthenticated ? (
               <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-full">
                 Logout
