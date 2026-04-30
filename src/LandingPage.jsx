@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import image from "../assets/LandingPage.png";
+// import image from "../assets/LandingPage.png";
 import Navbar from "./components/Navbar";
 
 export default function LandingPage() {
@@ -58,14 +58,14 @@ export default function LandingPage() {
           </div>
         </motion.div>
 
-        <motion.img
-          src={image}
-          alt="app preview"
-          className="w-full md:w-[480px] mb-10 md:mb-0"
+        <motion.div
+          className="w-full md:w-[480px] mb-10 md:mb-0 bg-gradient-to-br from-blue-900 to-gray-800 rounded-lg shadow-lg flex items-center justify-center h-96"
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1 }}
-        />
+        >
+          <span className="text-gray-400 text-center p-8 text-6xl">📈</span>
+        </motion.div>
       </section>
 
       {/* Stats Section */}

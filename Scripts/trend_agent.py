@@ -38,7 +38,7 @@ class TrendAnalysisAgent:
                 f"Provide only reasoning without a summary or conclusion."
             )
             response = openai.ChatCompletion.create(
-                model="mistral-large-2407",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a financial trend analysis expert."},
                     {"role": "user", "content": prompt}

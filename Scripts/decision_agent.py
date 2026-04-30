@@ -43,7 +43,7 @@ class DecisionAgent:
 
         try:
             response = openai.ChatCompletion.create(
-                model="mistral-large-2407",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a portfolio decision-making assistant."},
                     {"role": "user", "content": prompt}

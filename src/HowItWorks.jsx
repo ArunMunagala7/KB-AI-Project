@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { motion,AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import Accuracy from "../assets/Accuracy.png";
-import Workflow from "../assets/workflow.png";
-import Learn from "../assets/Learn.png";
-import Transparency from "../assets/transparency.png";
+// import Accuracy from "../assets/Accuracy.png";
+// import Workflow from "../assets/workflow.png";
+// import Learn from "../assets/Learn.png";
+// import Transparency from "../assets/transparency.png";
 import Navbar from "./components/Navbar";
-import Trend from "../assets/Trend.png";
-import Risk from "../assets/Risk.png";
-import Forecast from "../assets/forecast.png";
-import Decision from "../assets/decision.png";
+// import Trend from "../assets/Trend.png";
+// import Risk from "../assets/Risk.png";
+// import Forecast from "../assets/forecast.png";
+// import Decision from "../assets/decision.png";
 
 
 
@@ -116,14 +116,14 @@ export default function HowItWorks() {
         {/* Timeline Section with Image */}
         <section className="px-10 pt-10 pb-20 bg-gray-900">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-stretch">
-        <motion.img
-          src={Workflow}
-          alt="Workflow Graphic"
-          className="w-full h-full object-contain rounded-lg shadow-lg"
+        <motion.div
+          className="w-full h-full bg-gradient-to-br from-blue-900 to-gray-800 rounded-lg shadow-lg flex items-center justify-center text-gray-400"
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1 }}
-        />
+        >
+          <span className="text-center p-8">📊 Workflow Diagram</span>
+        </motion.div>
 
         <div className="flex flex-col justify-start">
           <h2 className="text-3xl font-bold text-blue-400 mb-20">Our 4-Agent Decision Engine</h2>
@@ -161,21 +161,21 @@ export default function HowItWorks() {
         <h2 className="text-3xl font-bold text-yellow-400 mb-10">Why Investors Trust Us</h2>
         <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           <motion.div whileHover={{ scale: 1.05 }} className="bg-gray-900 p-6 rounded-lg shadow-md border border-gray-700">
-            <img src={Transparency} alt="Transparency" className="mx-auto w-25 h-25 mb-4" />
+            <div className="mx-auto w-25 h-25 mb-4 text-5xl">🔍</div>
             <h3 className="text-xl font-semibold text-blue-400 mb-2">Data Transparency</h3>
             <p className="text-gray-400">
               Every decision is backed by data you can trace. No black boxes, just honest insights.
             </p>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} className="bg-gray-900 p-6 rounded-lg shadow-md border border-gray-700">
-            <img src={Learn} alt="Transparency" className="mx-auto w-25 h-25 mb-4" />
+            <div className="mx-auto w-25 h-25 mb-4 text-5xl">🧠</div>
             <h3 className="text-xl font-semibold text-blue-400 mb-2">AI That Learns You</h3>
             <p className="text-gray-400">
               FinSight.ai adapts to your risk appetite and portfolio evolution over time.
             </p>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} className="bg-gray-900 p-6 rounded-lg shadow-md border border-gray-700">
-            <img src={Accuracy} alt="Transparency" className="mx-auto w-25 h-25 mb-4" />
+            <div className="mx-auto w-25 h-25 mb-4 text-5xl">🎯</div>
             <h3 className="text-xl font-semibold text-blue-400 mb-2">Proven Accuracy</h3>
             <p className="text-gray-400">
               With 90%+ predictive accuracy in historical tests, our system builds confidence.

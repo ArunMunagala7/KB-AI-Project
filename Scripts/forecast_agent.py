@@ -61,7 +61,7 @@ class ForecastingAgent:
         reasoning = ""
         try:
             response = openai.ChatCompletion.create(
-                model="mistral-large-2407",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a helpful financial assistant."},
                     {"role": "user", "content": prompt}

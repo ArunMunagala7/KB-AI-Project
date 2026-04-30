@@ -43,7 +43,7 @@ class RiskAssessmentAgent:
                 f"News Headlines: {headlines}"
             )
             response = openai.ChatCompletion.create(
-                model="mistral-large-2407",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a financial analyst assistant."},
                     {"role": "user", "content": prompt}

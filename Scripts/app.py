@@ -30,41 +30,77 @@ def json_safe(obj):
 
 @app.route('/portfolio', methods=['GET'])
 def get_portfolio():
+    # Mock portfolio data for testing (replace with DB when PostgreSQL is set up)
+    mock_portfolio = [
+        {"ticker": "AAPL", "qty": 10, "avgPrice": 150.00},
+        {"ticker": "GOOGL", "qty": 5, "avgPrice": 2800.00},
+        {"ticker": "MSFT", "qty": 8, "avgPrice": 300.00}
+    ]
+    
     try:
-        conn = psycopg2.connect(
-            dbname=os.getenv("DB_NAME"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASS"),
-            host=os.getenv("DB_HOST"),
-            port=os.getenv("DB_PORT")
-        )
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM portfolio")
-        rows = cur.fetchall()
-        cur.close()
-        conn.close()
-
+        # Try PostgreSQL if configured
+        if os.getenv("DB_NAME") and os.getenv("DB_USER"):
+            try:
+                conn = psycopg2.connect(
+                    dbname=os.getenv("DB_NAME"),
+                    user=os.getenv("DB_USER"),
+                    password=os.getenv("DB_PASS"),
+                    host=os.getenv("DB_HOST"),
+                    port=os.getenv("DB_PORT")
+                )
+                cur = conn.cursor()
+                cur.execute("SELECT * FROM portfolio")
+                rows = cur.fetchall()
+                cur.close()
+                conn.close()
+                
+                portfolio = []
+                for row in rows:
+                    ticker = row[0]
+                    quantity = row[1]
+                    average_price = float(row[2])
+                    try:
+                        info = yf.Ticker(ticker).info
+                        price = float(info.get('currentPrice', info.get('regularMarketPrice')))
+                        name = info.get("shortName", ticker)
+                    except Exception as e:
+                        price = None
+                        name = ticker
+                    portfolio.append({
+                        "ticker": ticker,
+                        "name": name,
+                        "qty": quantity,
+                        "avgPrice": average_price,
+                        "currentPrice": price,
+                        "dayChange": info.get("regularMarketChangePercent"),
+                        "high52W": info.get("fiftyTwoWeekHigh"),
+                        "low52W": info.get("fiftyTwoWeekLow")
+                    })
+                return jsonify({"portfolio": portfolio})
+            except:
+                # Fall back to mock data if DB fails
+                pass
+        
+        # Use mock portfolio if no DB or DB fails
         portfolio = []
-        for row in rows:
-            ticker = row[0]
-            quantity = row[1]
-            average_price = float(row[2])
+        for item in mock_portfolio:
+            ticker = item["ticker"]
             try:
                 info = yf.Ticker(ticker).info
-                price = float(info.get('currentPrice', info.get('regularMarketPrice')))
+                price = float(info.get('currentPrice', info.get('regularMarketPrice', 0)))
                 name = info.get("shortName", ticker)
             except Exception as e:
-                price = None
+                price = item["avgPrice"]
                 name = ticker
             portfolio.append({
                 "ticker": ticker,
                 "name": name,
-                "qty": quantity,
-                "avgPrice": average_price,
+                "qty": item["qty"],
+                "avgPrice": item["avgPrice"],
                 "currentPrice": price,
-                "dayChange": info.get("regularMarketChangePercent"),
-                "high52W": info.get("fiftyTwoWeekHigh"),
-                "low52W": info.get("fiftyTwoWeekLow")
+                "dayChange": info.get("regularMarketChangePercent", 0) if 'info' in locals() else 0,
+                "high52W": info.get("fiftyTwoWeekHigh", 0) if 'info' in locals() else 0,
+                "low52W": info.get("fiftyTwoWeekLow", 0) if 'info' in locals() else 0
             })
 
         return jsonify({"portfolio": portfolio})
