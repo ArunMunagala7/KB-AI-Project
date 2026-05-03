@@ -4,6 +4,18 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import { TrendingUp, TrendingDown, ArrowRight, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
+
+// Helper function to determine confidence badge color
+const getConfidenceBadge = (confidence) => {
+  if (confidence >= 80) {
+    return { color: 'bg-green-500', textColor: 'text-white', label: 'High Confidence' };
+  } else if (confidence >= 70) {
+    return { color: 'bg-yellow-500', textColor: 'text-black', label: 'Medium Confidence' };
+  } else {
+    return { color: 'bg-red-500', textColor: 'text-white', label: 'Low Confidence' };
+  }
+};
+
 const StockDetail = ({ stock, chartData, onClose }) => {
   // State to track whether agent data should be shown
   const [showAgentData, setShowAgentData] = useState(false);
@@ -45,7 +57,7 @@ const StockDetail = ({ stock, chartData, onClose }) => {
         ...prev,
         trend: { status: 'completed', data: trendData }
       }));
-      addMessage("Trend Agent", `Trend Score: ${trendData.trend_score}, Type: ${trendData.trendtype}, SMA_50: ${trendData.sma50}, SMA_200: ${trendData.sma200}, RSI: ${trendData.rsi.toFixed(1)}, MACD: ${trendData.macd.toFixed(2)}`);
+      addMessage("Trend Agent", `Trend Score: ${trendData.trend_score}, Type: ${trendData.trendtype}, Confidence: ${trendData.confidence_score}%`);
       await new Promise(resolve => setTimeout(resolve, 1000));
       addMessage("Trend Agent", `Trend Analysis: ${trendData.analysis}`);
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -59,7 +71,7 @@ const StockDetail = ({ stock, chartData, onClose }) => {
         ...prev,
         risk: { status: 'completed', data: riskData }
       }));
-      addMessage("Risk Agent", `Risk Level: ${riskData.risk_level}, Volatility: ${riskData.volatility.toFixed(2)}, Max Drawdown: ${riskData.max_drawdown.toFixed(2)}, VaR 95: ${riskData.VaR_95.toFixed(2)}, Model Risk Score: ${riskData.llm_risk_score.toFixed(2)}%`);
+      addMessage("Risk Agent", `Risk Level: ${riskData.risk_level}, Risk Score: ${riskData.risk_score}, Confidence: ${riskData.confidence_score}%`);
       await new Promise(resolve => setTimeout(resolve, 1000));
       addMessage("Risk Agent", `Risk Assesment Analysis: ${trendData.analysis}`);
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -73,7 +85,7 @@ const StockDetail = ({ stock, chartData, onClose }) => {
         ...prev,
         forecasting: { status: 'completed', data: forecastData }
       }));
-      addMessage("Forecasting Agent", `Forecasted Price: $${forecastData.forecastedPrice.toFixed(2)}, Direction: ${forecastData.direction}, Change: ${forecastData.percentChange.toFixed(2)}%`);
+      addMessage("Forecasting Agent", `Forecasted Price: $${forecastData.forecastedPrice.toFixed(2)}, Direction: ${forecastData.direction}, Change: ${forecastData.percentChange.toFixed(2)}%, Confidence: ${forecastData.confidence_score}%`);
       await new Promise(resolve => setTimeout(resolve, 1000));
       addMessage("Forecasting Agent", `Forecasting Analysis: ${forecastData.analysis}`);
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -111,7 +123,7 @@ const StockDetail = ({ stock, chartData, onClose }) => {
         ...prev,
         decision: { status: 'completed', data: decisionData }
       }));
-      addMessage("Decision Agent", `Final Decision: ${decisionData.decision.decision} — ${decisionData.decision.reasoning}`);
+      addMessage("Decision Agent", `Final Decision: ${decisionData.decision.decision} (${decisionData.decision.confidence_score}% confidence, ${decisionData.decision.decision_type}) — ${decisionData.decision.reasoning}`);
   
       checkAllComplete();
     } catch (error) {
@@ -352,7 +364,18 @@ const StockDetail = ({ stock, chartData, onClose }) => {
           <>
             {/* TREND ANALYSER */}
             <div className="mt-6">
-              <h2 className="text-2xl font-bold mb-4">Trend Agent</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">Trend Agent</h2>
+                {agentStatus.trend.data && agentStatus.trend.data.confidence_score && (
+                  <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    getConfidenceBadge(agentStatus.trend.data.confidence_score).color
+                  } ${
+                    getConfidenceBadge(agentStatus.trend.data.confidence_score).textColor
+                  }`}>
+                    {agentStatus.trend.data.confidence_score}% Confidence
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
                 <div className="bg-gray-700 p-4 rounded-lg">
                   <p className="text-gray-400">Trend Type</p>
@@ -401,7 +424,18 @@ const StockDetail = ({ stock, chartData, onClose }) => {
 
             {/* Risk Agent */}
             <div>
-              <h2 className="text-2xl font-bold mb-4">Risk Agent</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">Risk Agent</h2>
+                {agentStatus.risk.data && agentStatus.risk.data.confidence_score && (
+                  <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    getConfidenceBadge(agentStatus.risk.data.confidence_score).color
+                  } ${
+                    getConfidenceBadge(agentStatus.risk.data.confidence_score).textColor
+                  }`}>
+                    {agentStatus.risk.data.confidence_score}% Confidence
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="bg-gray-700 p-4 rounded-lg">
                   <p className="text-gray-400">Risk Level</p>
@@ -469,7 +503,18 @@ const StockDetail = ({ stock, chartData, onClose }) => {
 
             {/* Forecasting Agent */}
             <div>
-              <h2 className="text-2xl font-bold mb-4">Forecasting Agent</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">Forecasting Agent</h2>
+                {agentStatus.forecasting.data && agentStatus.forecasting.data.confidence_score && (
+                  <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    getConfidenceBadge(agentStatus.forecasting.data.confidence_score).color
+                  } ${
+                    getConfidenceBadge(agentStatus.forecasting.data.confidence_score).textColor
+                  }`}>
+                    {agentStatus.forecasting.data.confidence_score}% Confidence
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-gray-700 p-4 rounded-lg">
                   <p className="text-gray-400">Final Forecasted Price</p>
@@ -496,10 +541,30 @@ const StockDetail = ({ stock, chartData, onClose }) => {
 
             {/* Decision Agent */}
             <div>
-              <h2 className="text-2xl font-bold mb-4">Decision Agent</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">Decision Agent</h2>
+                {agentStatus.decision.data && agentStatus.decision.data.decision.confidence_score && (
+                  <div className="flex items-center gap-2">
+                    <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      getConfidenceBadge(agentStatus.decision.data.decision.confidence_score).color
+                    } ${
+                      getConfidenceBadge(agentStatus.decision.data.decision.confidence_score).textColor
+                    }`}>
+                      {agentStatus.decision.data.decision.confidence_score}% Confidence
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      agentStatus.decision.data.decision.decision_type === 'rule-based' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-purple-500 text-white'
+                    }`}>
+                      {agentStatus.decision.data.decision.decision_type === 'rule-based' ? '⚡ Rule-Based' : '🤖 LLM-Based'}
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-gray-700 p-4 rounded-lg">
-                  <p className="text-gray-400">Final Decison</p>
+                  <p className="text-gray-400">Final Decision</p>
                 <p className={`text-xl font-bold ${
                   agentStatus.decision.data.decision.decision === 'BUY' ? 'text-green-500' :
                   agentStatus.decision.data.decision.decision === 'SELL' ? 'text-red-500' :
@@ -507,6 +572,12 @@ const StockDetail = ({ stock, chartData, onClose }) => {
                 }`}>
                   {agentStatus.decision.data.decision.decision}
                 </p>
+                </div>
+                <div className="bg-gray-700 p-4 rounded-lg col-span-2">
+                  <p className="text-gray-400">Reasoning</p>
+                  <p className="text-sm text-gray-300 mt-1">
+                    {agentStatus.decision.data.decision.reasoning}
+                  </p>
                 </div>
               </div>
             </div>

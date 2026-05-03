@@ -73,6 +73,10 @@ class ForecastingAgent:
         except Exception as e:
             print(f"LLM reasoning error: {e}")
 
+        # Calculate confidence based on forecast magnitude
+        # Larger percentage changes indicate clearer signals, higher confidence
+        confidence_score = min(95, max(70, 75 + int(abs(percent_change) * 2)))
+
         return {
             "ticker": ticker,
             "initial_price": round(initial_price, 2),
@@ -80,5 +84,6 @@ class ForecastingAgent:
             "percentChange": round(percent_change, 2),
             "direction": trend_direction,
             "analysis": reasoning,
-            "forecast": {str(k): v for k, v in forecast.items()}
+            "forecast": {str(k): v for k, v in forecast.items()},
+            "confidence_score": confidence_score
         }

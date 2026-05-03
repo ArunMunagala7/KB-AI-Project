@@ -99,6 +99,10 @@ class TrendAnalysisAgent:
             llm_reasoning = self.get_llm_trend_reasoning(trend_score, trend_type, round(sma_50, 2), round(sma_200, 2),
                                                          round(rsi_val, 2), round(macd_val, 2), round(signal_val, 2))
 
+            # Calculate confidence based on trend strength
+            # Stronger trends (abs(trend_score) closer to 3) = higher confidence
+            confidence_score = 70 + (abs(trend_score) * 10)  # Range: 70-100%
+
             return {
                 'Ticker': ticker,
                 'trend_score': trend_score,
@@ -109,6 +113,7 @@ class TrendAnalysisAgent:
                 'macd': round(macd_val, 2),
                 'macd_signal': round(signal_val, 2),
                 'analysis': llm_reasoning,
+                'confidence_score': confidence_score
             }
 
         except Exception as e:

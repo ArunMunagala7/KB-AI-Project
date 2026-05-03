@@ -98,6 +98,12 @@ class RiskAssessmentAgent:
             llm_analysis, llm_risk_score = self.evaluate_news_with_llm(ticker, headlines)
             if llm_risk_score == None:
                 llm_risk_score = risk_score
+            
+            # Calculate confidence based on consistency between metrics
+            # High volatility + high drawdown + high risk score = high confidence in assessment
+            metrics_consistency = abs(risk_score - (volatility * 100) / 10) + abs(risk_score - abs(max_drawdown) / 10)
+            confidence_score = max(70, min(95, 95 - int(metrics_consistency * 2)))
+            
             return {
                 'Ticker': str(ticker),
                 'risk_score': float(risk_score),
@@ -107,7 +113,8 @@ class RiskAssessmentAgent:
                 'VaR_95': float(var_95),
                 'news_headlines': [str(h) for h in headlines],
                 'analysis': str(llm_analysis),
-                'llm_risk_score': float(llm_risk_score) if llm_risk_score is not None else None
+                'llm_risk_score': float(llm_risk_score) if llm_risk_score is not None else None,
+                'confidence_score': confidence_score
             }
 
         except Exception as e:
