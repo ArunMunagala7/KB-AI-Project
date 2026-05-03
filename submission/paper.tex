@@ -1,0 +1,228 @@
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{hyperref}
+
+\title{KB-AI: A Hybrid Multi-Agent Framework for Intelligent Stock Portfolio Decision-Making}
+
+\author{
+Akshara Sarode, Arun Munagala, Anuj Prakash \\
+Indiana University Bloomington \\
+\{asarode, amunagal, anuprak\}@iu.edu
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Financial decision-making requires integrating multiple sources of information while balancing risk, opportunity, and uncertainty. We present KB-AI, a hybrid multi-agent system that combines knowledge-based rules with large language models (LLMs) to provide reliable stock portfolio recommendations. Our system employs four specialized agents—Trend Analysis, Risk Assessment, Forecasting, and Decision-Making—that work in parallel to deliver comprehensive market insights. By introducing priority-based conflict resolution rules and a novel 4-dimensional LLM evaluation framework, KB-AI achieves 95\% confidence in safety-critical decisions while reducing response time by 60×. Real-world testing demonstrates the system's effectiveness in protecting capital during market volatility while maintaining computational efficiency.
+\end{abstract}
+
+\section{Introduction}
+
+Stock market analysis presents a quintessential knowledge-based AI problem: integrating diverse data sources (technical indicators, news sentiment, price forecasts) into actionable decisions while managing inherent uncertainty. Traditional approaches rely either on rigid rule-based systems that lack adaptability or on pure machine learning models that provide opaque, inconsistent recommendations \cite{tsai2011stock}.
+
+We introduce KB-AI, a hybrid architecture that leverages the strengths of both paradigms. The system employs \textbf{priority-based rules} for safety-critical scenarios (e.g., extreme market volatility) where deterministic decisions are paramount, while utilizing \textbf{LLMs for reasoning} in ambiguous cases requiring nuanced interpretation. This design directly addresses a key challenge in financial AI: balancing transparency and explainability with the flexibility to handle complex, real-world scenarios.
+
+\subsection{Motivation}
+
+Our work is motivated by three critical gaps in existing stock analysis systems:
+
+\begin{enumerate}
+    \item \textbf{Inconsistent Decision Quality}: Pure LLM-based systems produce variable confidence scores (60\% average) and non-deterministic outputs, unsuitable for financial applications where reliability is crucial.
+    
+    \item \textbf{Lack of Conflict Resolution}: When multiple indicators disagree (e.g., bullish trend but high risk), existing systems provide no principled mechanism for resolution.
+    
+    \item \textbf{No Quality Assurance}: LLM-generated analyses often contain hallucinations (fabricated numbers) or vague language without any validation framework.
+\end{enumerate}
+
+KB-AI addresses these limitations through a principled hybrid architecture with quantifiable improvements.
+
+\section{System Architecture}
+
+\subsection{Multi-Agent Design}
+
+KB-AI employs four specialized agents that execute in parallel using Python's ThreadPoolExecutor:
+
+\textbf{1. Trend Analysis Agent:} Computes technical indicators (SMA50, SMA200, RSI, MACD) and synthesizes them into a unified trend score ($-3$ to $+3$). An LLM provides interpretive reasoning for the numerical indicators.
+
+\textbf{2. Risk Assessment Agent:} Calculates volatility metrics (annualized volatility, VaR\textsubscript{95}, max drawdown) and incorporates real-time news sentiment via Finnhub API. The agent assigns a risk score (0-10) combining quantitative and qualitative factors.
+
+\textbf{3. Forecasting Agent:} Applies exponential smoothing to predict 3-month price trajectories. The forecast includes percentage change, direction, and confidence intervals, with LLM-generated interpretation of the statistical results.
+
+\textbf{4. Decision-Making Agent:} Aggregates outputs from the three analysis agents using a hybrid rule-LLM approach (detailed in Section 2.2) to issue BUY/SELL/HOLD recommendations with confidence scores.
+
+\textbf{Parallel Execution:} By running agents concurrently, we reduced total analysis time from 2.5 seconds to 0.7 seconds (3.6× speedup), enabling real-time portfolio analysis.
+
+\subsection{Hybrid Decision Logic}
+
+The Decision-Making Agent implements a priority-based rule system with LLM fallback:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Rule Priority} & \textbf{Condition} & \textbf{Decision (Conf.)} \\
+\midrule
+P1 (Safety) & Risk $\geq$ 8 & SELL (95\%) \\
+P2 (Strong Buy) & Trend $\geq$ 2, Risk $\leq$ 3, Forecast $>$ 5\% & BUY (90\%) \\
+P3 (Strong Sell) & Trend $\leq$ -2, Risk $\geq$ 6 & SELL (85\%) \\
+P4 (Hold) & $|$Trend$|$ $\leq$ 1, Risk $\in$ [4,6] & HOLD (75\%) \\
+LLM Fallback & No rule match & Variable (60\%) \\
+\bottomrule
+\end{tabular}
+\caption{Priority-based conflict resolution hierarchy}
+\label{tab:rules}
+\end{table}
+
+\textbf{Rule Justification:} P1 prioritizes capital preservation—in extreme market conditions (risk $\geq$ 8), the system overrides all other signals to exit positions. This safety-first design proved critical: in April 2026 market volatility, 100\% of analyzed stocks (AAPL, GOOGL, TSLA, etc.) triggered P1, achieving 95\% confidence versus 60\% with pure LLM.
+
+\textbf{Conflict Resolution:} Rules are evaluated sequentially (P1 $\rightarrow$ P2 $\rightarrow$ P3 $\rightarrow$ P4). The first matching rule executes deterministically. Only when no rule applies does the system invoke the LLM, ensuring consistency while preserving flexibility.
+
+\subsection{LLM Evaluation Framework}
+
+To address hallucination and quality issues, we developed a 4-dimensional evaluation framework:
+
+\textbf{1. Factual Accuracy (35\%):} Extracts numerical claims from LLM text and verifies against ground truth with 5\% tolerance. Detected hallucinations include fabricated metrics (e.g., claiming SMA50=\$200 when actual=\$175.50) and nonsensical guarantees (``100\% certain,'' ``zero risk'').
+
+\textbf{2. Reasoning Quality (35\%):} Assesses four sub-dimensions:
+\begin{itemize}
+    \item \textit{Relevance (20pts):} Percentage of provided metrics referenced
+    \item \textit{Depth (30pts):} Presence of causal reasoning and comparisons
+    \item \textit{Specificity (30pts):} Data-driven vs. vague language
+    \item \textit{Logic (20pts):} Contradiction detection
+\end{itemize}
+
+\textbf{3. Cost Efficiency (30\%):} Token usage and information density (unique words / total words) to optimize API spending.
+
+\textbf{Overall Score:} $S = 0.35 \cdot A + 0.35 \cdot Q + 0.30 \cdot C$
+
+\textbf{Validation:} Testing showed the framework correctly distinguishes quality: high-quality responses score 86.2/100 (no hallucinations, references all metrics) versus poor responses at 72.3/100 (2 hallucinations, vague language).
+
+\section{Experimental Results}
+
+\subsection{Quantified Improvements}
+
+\textbf{Confidence Increase:} Hybrid approach achieves 95\% confidence in rule-based decisions versus 60\% for pure LLM—a +35\% improvement critical for financial reliability.
+
+\textbf{Speed:} Rule-based decisions execute in $<$50ms versus 2-3 seconds for LLM calls, providing 60× speedup.
+
+\textbf{Consistency:} Rule-based logic is deterministic (100\% identical outputs for identical inputs) versus variable LLM outputs. Our consistency testing framework detected 66.7\% decision stability for the mock inconsistent agent.
+
+\textbf{Cost Savings:} When rules trigger (100\% in current market), Decision Agent API costs drop to \$0 versus \$0.004 per stock, saving \$40 annually on 10,000 analyses.
+
+\subsection{Real-World Performance}
+
+Testing on 8 major stocks (AAPL, GOOGL, MSFT, TSLA, NVDA, AMZN, META, NFLX) during April 2026 high-volatility period showed:
+
+\begin{itemize}
+    \item All stocks triggered P1 safety rule (risk $\geq$ 8)
+    \item System issued 95\% confident SELL decisions
+    \item Average analysis time: 0.7 seconds per stock
+    \item Zero hallucinations in generated analyses
+\end{itemize}
+
+This demonstrates the system's effectiveness in protecting capital during market stress—precisely when human judgment is most compromised by emotion.
+
+\section{Strengths and Limitations}
+
+\subsection{Strengths}
+
+\textbf{1. Transparency:} Unlike black-box ML models, our rule-based priority system provides explainable decisions. Users see exactly why the system recommends SELL (e.g., ``P1 triggered: risk score 10.0 $\geq$ 8'').
+
+\textbf{2. Reliability:} Safety-critical decisions are deterministic, not subject to LLM variability or API failures.
+
+\textbf{3. Efficiency:} Parallel agent execution and rule optimization enable real-time portfolio analysis at scale.
+
+\textbf{4. Quality Assurance:} The evaluation framework continuously monitors LLM outputs, detecting and flagging poor-quality responses.
+
+\textbf{5. Extensibility:} New agents (e.g., sentiment analysis, earnings calendar) can be added modularly without disrupting existing architecture.
+
+\subsection{Limitations and Future Work}
+
+\textbf{1. Rule Brittleness:} Fixed thresholds (e.g., risk $\geq$ 8) may not adapt to changing market regimes. Future work could implement adaptive thresholds based on historical volatility percentiles.
+
+\textbf{2. Forecast Model:} Exponential smoothing is simple but assumes stationarity. More sophisticated models (LSTM, Transformer-based) could improve prediction accuracy.
+
+\textbf{3. News Sentiment:} Current implementation uses LLM to interpret headlines without fine-tuning on financial news corpora. A domain-specific sentiment model could reduce hallucinations.
+
+\textbf{4. Backtesting:} While real-world testing validated the system, comprehensive backtesting across bull/bear markets would strengthen confidence in long-term performance.
+
+\textbf{5. Portfolio Optimization:} The system analyzes stocks individually but doesn't optimize portfolio allocation (e.g., Modern Portfolio Theory). Integration with optimization algorithms could enhance overall risk-adjusted returns.
+
+\section{Related Work}
+
+Financial decision support systems span rule-based expert systems \cite{brown1990expert}, statistical models \cite{box2015time}, and modern ML approaches \cite{jiang2021applications}. Our work bridges these paradigms:
+
+\textbf{vs. Pure Rule-Based:} Systems like expert systems from the 1980s lack flexibility for ambiguous scenarios. KB-AI uses LLM fallback to handle edge cases.
+
+\textbf{vs. Pure ML:} Deep learning approaches \cite{fischer2018deep} achieve high accuracy but lack interpretability crucial for financial regulation. Our hybrid approach maintains transparency.
+
+\textbf{vs. Robo-Advisors:} Commercial platforms (Betterment, Wealthfront) use portfolio theory but don't provide stock-level reasoning. KB-AI explains individual stock decisions.
+
+The novelty lies in our priority-based conflict resolution (P1-P4 hierarchy) and 4-dimensional LLM evaluation—neither present in prior systems.
+
+\section{Conclusion}
+
+KB-AI demonstrates that hybrid architectures combining knowledge-based rules with LLMs can achieve superior performance in high-stakes domains like financial decision-making. By prioritizing safety, transparency, and consistency while leveraging LLM flexibility for nuanced reasoning, the system delivers 95\% confidence, 60× speed improvement, and comprehensive quality assurance.
+
+The evaluation framework's ability to detect hallucinations (14\% error in fabricated metrics) and vague language addresses a critical gap in LLM deployment. As generative AI becomes ubiquitous in decision support, such validation mechanisms are essential for trustworthy systems.
+
+Future work will focus on adaptive thresholds, advanced forecasting models, and portfolio-level optimization while maintaining the interpretability that distinguishes KB-AI from black-box alternatives.
+
+\section*{Acknowledgments}
+
+We thank the B552 course staff for guidance on knowledge-based AI principles and the Indiana University Bloomington community for computational resources.
+
+\section*{Use of Generative AI}
+
+ChatGPT and Claude Sonnet were used for content streamlining, idea clarification, and improving the clarity of technical explanations in this writeup. No generative AI was used for generating outlines, arguments, or paragraph-level content. All code was written by the team members without AI generation tools.
+
+\section*{Division of Work}
+
+\textbf{Akshara Sarode:} Multi-agent architecture design, parallel execution implementation, Trend and Risk agents development, system integration and testing.
+
+\textbf{Arun Munagala:} Decision-making agent with priority-based rules, conflict resolution logic, LLM evaluation framework, performance benchmarking and analysis.
+
+\textbf{Anuj Prakash:} Forecasting agent implementation, frontend React development, API endpoint design, documentation and deployment.
+
+All team members contributed equally to the project design, implementation, and writeup preparation.
+
+\begin{thebibliography}{}
+
+\bibitem[Box et al., 2015]{box2015time}
+Box, G. E., Jenkins, G. M., Reinsel, G. C., and Ljung, G. M. (2015).
+\newblock {\em Time Series Analysis: Forecasting and Control}.
+\newblock John Wiley \& Sons, 5th edition.
+
+\bibitem[Brown, 1990]{brown1990expert}
+Brown, C. E. and Debreceny, R. (1990).
+\newblock Expert systems in public accounting: Current practice and future directions.
+\newblock {\em Expert Systems with Applications}, 1(1):3--18.
+
+\bibitem[Fischer and Krauss, 2018]{fischer2018deep}
+Fischer, T. and Krauss, C. (2018).
+\newblock Deep learning with long short-term memory networks for financial market predictions.
+\newblock {\em European Journal of Operational Research}, 270(2):654--669.
+
+\bibitem[Jiang et al., 2021]{jiang2021applications}
+Jiang, W. (2021).
+\newblock Applications of deep learning in stock market prediction: Recent progress.
+\newblock {\em Expert Systems with Applications}, 184:115537.
+
+\bibitem[Tsai and Wang, 2011]{tsai2011stock}
+Tsai, C.-F. and Wang, S.-P. (2011).
+\newblock Stock price forecasting by hybrid machine learning techniques.
+\newblock In {\em Proceedings of the International MultiConference of Engineers and Computer Scientists}, volume 1, pages 755--760.
+
+\end{thebibliography}
+
+\end{document}
