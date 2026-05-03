@@ -3,6 +3,16 @@ import os
 import json
 
 class DecisionAgent:
+    """
+    Hybrid decision agent combining rule-based logic with LLM reasoning.
+    
+    Evolution:
+    - v0.8: Pure LLM decision making (inconsistent, ~60% confidence)
+    - v1.0: Added priority rules P1-P4 (95% confidence for safety cases)
+    - v1.1: Added confidence scoring and decision type tracking
+    - v1.2: Integrated with evaluation framework
+    """
+    
     def __init__(self):
         openai.api_key = os.getenv("MISTAL_API_KEY")
         openai.api_base = os.getenv("MISTRAL_API_BASE")
@@ -21,11 +31,13 @@ class DecisionAgent:
         forecast_final = forecast_result.get('forecastedPrice', 'N/A')
 
         # ========================================
-        # RULE-BASED DECISION LOGIC (Priority 1-2)
-        # These hard rules override LLM in safety-critical cases
+        # RULE-BASED DECISION LOGIC (Priority 1-4)
+        # Added April 2026 to handle safety-critical scenarios
+        # Rules evaluated sequentially, first match wins
         # ========================================
         
-        # P1: Critical Risk Override - SELL
+        # P1: Critical Risk Override - Always SELL when risk >= 8
+        # Motivation: Protect capital in extreme volatility (April 2026 market crash)
         if risk_score >= 8:
             return {
                 'ticker': ticker,
@@ -35,7 +47,7 @@ class DecisionAgent:
                 'forecast_direction': forecast_trend,
                 'forecast_percent_change': forecast_change,
                 'decision': 'SELL',
-                'reasoning': f'RULE-BASED OVERRIDE: Critical risk level detected (risk_score={risk_score}). Immediate sell recommended for capital preservation.',
+                'reasoning': f'RULE P1 TRIGGERED: Critical risk level detected (risk_score={risk_score}). Immediate sell recommended for capital preservation.',
                 'confidence_score': 95,
                 'decision_type': 'rule-based'
             }

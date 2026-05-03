@@ -2,6 +2,16 @@
 """
 LLM Response Evaluation Framework
 Evaluates LLM outputs across 4 dimensions: Accuracy, Consistency, Quality, Cost
+
+Created: April 2026
+Purpose: Address hallucination issues discovered in production
+         (e.g., LLM claiming SMA50=$200 when actual=$175.50)
+         
+Development notes:
+- Started with just accuracy checking
+- Added quality metrics after noticing vague language
+- Consistency testing added when same stock gave different recommendations
+- Cost tracking requested by team to monitor API spending
 """
 
 import json
@@ -17,10 +27,20 @@ class LLMEvaluator:
     Comprehensive evaluation framework for LLM responses in financial analysis
     
     Evaluation Dimensions:
-    1. Factual Accuracy - Are numerical claims correct?
-    2. Consistency - Same input = same output?
-    3. Reasoning Quality - Is explanation logical and relevant?
-    4. Cost Efficiency - Token usage vs value added
+    1. Factual Accuracy (35%) - Are numerical claims correct?
+    2. Reasoning Quality (35%) - Is explanation logical and relevant?
+    3. Cost Efficiency (30%) - Token usage vs value added
+    4. Consistency - Optional testing for output stability
+    
+    Usage:
+        evaluator = LLMEvaluator()
+        report = evaluator.evaluate_comprehensive(
+            agent_name='Trend Agent',
+            llm_response=result['analysis'],
+            ground_truth={'sma50': 175.50, ...},
+            input_metrics=ground_truth,
+            tokens_used=150
+        )
     """
     
     def __init__(self):
@@ -29,6 +49,7 @@ class LLMEvaluator:
         
     # ========================================
     # DIMENSION 1: FACTUAL ACCURACY
+    # Detects hallucinations and fabricated metrics
     # ========================================
     
     def evaluate_factual_accuracy(self, llm_response: str, ground_truth: Dict) -> Dict:

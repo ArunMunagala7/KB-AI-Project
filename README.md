@@ -1,96 +1,124 @@
-# KB-AI: Knowledge-Based AI for Stock Portfolio Decision-Making
-
-**Team Name:** KB-AI Team
-
-**Members:**  
-- Akshara Sarode (asarode@iu.edu)
-- Arun Munagala (amunagal@iu.edu)
-- Anuj Prakash (anuprak@iu.edu)
-
-**Course:** B552 - Knowledge-Based AI, Spring 2026  
-**Institution:** Indiana University Bloomington
-
-This repository hosts a hybrid multi-agent stock analysis application that combines knowledge-based rules with large language models (LLMs) to provide reliable, transparent stock portfolio recommendations. The system uses **Flask** (Python) on the backend and **React + Vite** on the frontend to deliver end-to-end intelligent stock insights through four specialized agents.
-
-## Table of Contents
-
-1. [Overview](#overview)  
-2. [Features](#features)  
-3. [Prerequisites](#prerequisites)  
-4. [Installation & Setup](#installation)
-5. [Agents and Scripts](#Agents)
-6. [Endpoints & API](#Endpoints)
-
----
-<a name="overview"></a>
-## 1. Overview
-
-**KB-AI** is a comprehensive hybrid multi-agent platform that combines knowledge-based rules with large language models (LLMs) for intelligent stock portfolio analysis. The system addresses critical challenges in financial AI: **reliability**, **transparency**, and **quality assurance**.
-
-### Key Innovations
-
-1. **Priority-Based Conflict Resolution**: Four hierarchical rules (P1-P4) handle safety-critical scenarios deterministically, with LLM fallback for ambiguous cases
-2. **4-Dimensional LLM Evaluation**: Continuous quality monitoring detecting hallucinations, vague language, and inconsistencies
-3. **Parallel Agent Execution**: 3.6× faster analysis through concurrent processing
-4. **Confidence Scoring**: Transparent confidence levels (70-95%) for every recommendation
-
-The system leverages four specialized Python agents to:
-
-- Perform **technical trend analysis** (SMA, RSI, MACD) with 90% confidence  
-- Assess **risk** (volatility, max drawdown, VaR) and incorporate **news sentiment** via Finnhub API  
-- **Forecast** prices using exponential smoothing with 90% confidence intervals  
-- Issue **BUY/SELL/HOLD decisions** with 95% confidence in safety-critical scenarios
-
-The React + Vite frontend provides an interactive dashboard displaying real-time results, confidence badges, and decision reasoning.
-
----
-<a name="features"></a>
-## 2. Features
-
-- **Trend Analysis**  
-  Calculates various technical indicators and synthesizes them into a single trend score. An optional LLM provides short reasoning about the trend.
-
-- **Risk Assessment**  
-  Measures annualized volatility, Value at Risk (VaR), and maximum drawdown, and parses recent news headlines via Finnhub API. An LLM can produce a “news-based risk score.”
-
-- **Forecasting**  
-  Predicts the stock’s closing price over the next 3 months using **ExponentialSmoothing**. Summarize the forecast using an LLM-generated explanation.
-
-- **Decision Making**  
-  Aggregates the above agents’ results to suggest a final trading action: **BUY**, **SELL**, or **HOLD**.
-
-- **Flask RESTful API**  
-  Provides endpoints to query portfolio information, trigger the analysis, and retrieve results or CSV exports of historical/forecast data.
-
-- **React + Vite Frontend**  
-  Presents an interactive dashboard that displays all results, enabling convenient user interaction.
+├── src/                  # React frontend
+│   └── components/      # UI components
+├── tests/                # Test suite
+├── docs/                 # Documentation
+│   ├── DEMO_GUIDE.md
+│   ├── IMPROVEMENT_ANALYSIS.md
+│   └── DEVELOPMENT_NOTES.md
+├── submission/           # Course submission materials
+└── README.md            # This file
+```
 
 ---
 
-<a name="prerequisites"></a>
-## 3. Prerequisites
+## 6. Usage Examples
 
-Before installing and running, ensure you have:
+### Analyzing a Single Stock
 
-1. **Python 3.9+**  
-2. **PostgreSQL** (optional if you want to store portfolio holdings in a database)  
-4. **Finnhub API Key** – if you wish to pull relevant news headlines and incorporate them into the risk analysis.  
-5. **Mistral or OpenAI API credentials** – for the LLM functionalities in your agents (optional but recommended).
+```python
+from trend_agent import TrendAnalysisAgent
+from risk_assesment import RiskAssessmentAgent
+from forecast_agent import ForecastingAgent
+from decision_agent import DecisionAgent
+
+# Run agents
+trend = TrendAnalysisAgent().run('AAPL')
+risk = RiskAssessmentAgent().run('AAPL')
+forecast = ForecastingAgent().run('AAPL')
+
+# Get decision
+decision = DecisionAgent().decide(trend, risk, forecast)
+print(f"Recommendation: {decision['decision']}")
+print(f"Confidence: {decision['confidence_score']}%")
+```
+
+### Evaluating LLM Output Quality
+
+```python
+from llm_evaluator import LLMEvaluator
+
+evaluator = LLMEvaluator()
+report = evaluator.evaluate_comprehensive(
+    agent_name='Trend Agent',
+    llm_response=trend['analysis'],
+    ground_truth={'sma50': 175.50, 'rsi': 58.3},
+    input_metrics={'sma50': 175.50, 'rsi': 58.3},
+    tokens_used=150
+)
+
+if report['overall_score'] < 70:
+    print("⚠️ Low quality response detected")
+```
 
 ---
-<a name="installation"></a>
-## 4. Installation
 
-1. **Clone this repo**:
+## 7. API Endpoints
 
-   ```bash
-   git clone https://github.com/your-org/LuddyHackathon2K25.git
-   cd LuddyHackathon2K25-main
-   pip install --upgrade pip
-   pip install -r requirements.txt
-   npm install
+All endpoints run on `http://localhost:5001`
 
-2. Create an Environment Variables file
+- `GET /portfolio` - Retrieve current portfolio
+- `POST /update-portfolio` - Add/update holdings  
+- `GET /trend?ticker=AAPL` - Get trend analysis
+- `GET /risk?ticker=AAPL` - Get risk assessment
+- `GET /forecast?ticker=AAPL` - Get price forecast
+- `GET /decision?ticker=AAPL` - Get BUY/SELL/HOLD decision
+
+---
+
+## 8. Testing
+
+Run tests:
+
+```bash
+cd tests
+python test_evaluator.py       # LLM evaluation tests
+python test_agents.py           # Agent unit tests
+python how_it_works.py          # Integration examples
+```
+
+---
+
+## 9. Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+
+---
+
+## 10. Known Issues
+
+See [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md) for current limitations and planned improvements.
+
+---
+
+## 11. Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and updates.
+
+---
+
+## 12. License
+
+This project is developed for academic purposes (B552 - Knowledge-Based AI, Spring 2026).
+
+---
+
+## 13. Acknowledgments
+
+- Indiana University Bloomington - B552 Course
+- yfinance for market data
+- Finnhub for news API
+- OpenAI for LLM capabilities
+
+---
+
+## 14. Contact
+
+**Team Members:**
+- Akshara Sarode - asarode@iu.edu
+- Arun Munagala - amunagal@iu.edu  
+- Anuj Prakash - anuprak@iu.edu
+
+**Repository:** https://github.com/ArunMunagala7/KB-AI-Project
 
    ```bash
    DB_NAME=your_database_name
