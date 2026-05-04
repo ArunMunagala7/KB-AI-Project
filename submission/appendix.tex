@@ -429,9 +429,36 @@ def analyze_stock(ticker):
     }
 \end{lstlisting}
 
-\section*{Appendix D: Running the System}
+\section*{Appendix D: System Interface Screenshots}
 
-\subsection*{D.1 Prerequisites}
+The following screenshots demonstrate KB-AI's user interface and key functionality:
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{screenshot1.png}
+\caption{Individual Stock Analysis: Complete output from all four agents (Trend, Risk, Forecast, Decision) with confidence scores and rule-based decision indicator.}
+\label{fig:screenshot1}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{screenshot2.png}
+\caption{Detailed Decision View: Shows the final recommendation with confidence badge, decision type (⚡ Rule-Based), triggered rule (P1: Critical Risk Override), and complete reasoning.}
+\label{fig:screenshot2}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{screenshot3.png}
+\caption{Portfolio Manager Dashboard: Multi-stock overview displaying real-time analysis capabilities, confidence indicators, and action buttons for comprehensive portfolio management.}
+\label{fig:screenshot3}
+\end{figure}
+
+The interface emphasizes transparency through color-coded confidence badges (green ≥80\%, yellow 70-79\%, red <70\%), explicit rule indicators (⚡ for rule-based, 🤖 for LLM-based), and detailed reasoning for each recommendation.
+
+\section*{Appendix E: Running the System}
+
+\subsection*{E.1 Prerequisites}
 \begin{lstlisting}
 - Python 3.9+
 - Node.js 16+
@@ -439,7 +466,7 @@ def analyze_stock(ticker):
 - OpenAI API Key (for LLM features)
 \end{lstlisting}
 
-\subsection*{D.2 Installation}
+\subsection*{E.2 Installation}
 \begin{lstlisting}[language=bash]
 # Clone repository
 git clone https://github.com/ArunMunagala7/KB-AI-Project.git
@@ -456,7 +483,7 @@ npm install
 npm run dev  # Runs on port 5174
 \end{lstlisting}
 
-\subsection*{D.3 Usage Example}
+\subsection*{E.3 Usage Example}
 \begin{lstlisting}[language=bash]
 # Navigate to http://localhost:5174
 # 1. View portfolio dashboard
